@@ -9,74 +9,131 @@ struct BroadcastStartButton: UIViewRepresentable {
         picker.showsMicrophoneButton = false
         return picker
     }
+
     func updateUIView(_ uiView: RPSystemBroadcastPickerView, context: Context) {}
 }
 
 struct ContentView: View {
-    @State private var notificationsAllowed = false
+    @State private var notificationStatus = "Verificando permissão..."
+    @State private var diagnosticMessage = "Nenhum teste realizado"
 
     var body: some View {
         NavigationStack {
-            VStack(alignment: .leading, spacing: 24) {
-                HStack(spacing: 14) {
-                    Image(systemName: "hand.raised.fill")
-                        .font(.system(size: 36))
-                        .foregroundStyle(.yellow)
-                    VStack(alignment: .leading, spacing: 4) {
-                        Text("Reels Off").font(.largeTitle.bold())
-                        Text("Protótipo pessoal de detecção")
-                            .foregroundStyle(.secondary)
-                    }
-                }
-                .padding(.top, 24)
-
-                VStack(alignment: .leading, spacing: 12) {
-                    Label("1. Permitir notificações", systemImage: "bell")
-                        .font(.headline)
-                    Text("O detector experimental envia um aviso quando identifica uma tela de Reels. Ainda não fecha ou bloqueia o Instagram.")
-                        .font(.subheadline)
-                        .foregroundStyle(.secondary)
-                    Button(notificationsAllowed ? "Permissão solicitada" : "Solicitar permissão") {
-                        UNUserNotificationCenter.current().requestAuthorization(options: [.alert, .sound, .badge]) { granted, _ in
-                            DispatchQueue.main.async { notificationsAllowed = granted }
+            ScrollView {
+                VStack(alignment: .leading, spacing: 18) {
+                    HStack(spacing: 12) {
+                        Image(systemName: "hand.raised.fill")
+                            .font(.system(size: 38))
+                            .foregroundStyle(.yellow)
+                        VStack(alignment: .leading, spacing: 4) {
+                            Text("Reels Off").font(.largeTitle.bold())
+                            Text("Detector experimental para iPhone")
+                                .foregroundStyle(.secondary)
                         }
                     }
-                    .buttonStyle(.bordered)
-                }
-                .padding()
-                .frame(maxWidth: .infinity, alignment: .leading)
-                .background(.thinMaterial, in: RoundedRectangle(cornerRadius: 16))
+                    .padding(.top, 12)
 
-                VStack(alignment: .leading, spacing: 12) {
-                    Label("2. Iniciar o monitoramento", systemImage: "record.circle")
+                    Label("Ainda não bloqueia Reels", systemImage: "exclamationmark.triangle.fill")
                         .font(.headline)
-                    Text("Toque no ícone de transmissão e selecione ReelsMonitorExtension. O iOS mostrará um aviso de captura de tela.")
-                        .font(.subheadline)
+                        .foregroundStyle(.orange)
+                        .padding()
+                        .frame(maxWidth: .infinity, alignment: .leading)
+                        .background(.orange.opacity(0.10), in: RoundedRectangle(cornerRadius: 14))
+
+                    section("1. Notificações", icon: "bell") {
+                        Text("Situação: \(notificationStatus)")
+                            .font(.subheadline)
+                        Button("Solicitar permissão") {
+                            UNUserNotificationCenter.current()
+                                .requestAuthorization(options: [.alert, .sound, .badge]) { _, _ in
+                                    refreshNotificationStatus()
+                                }
+                        }
+                        .buttonStyle(.borderedProminent)
+
+                        Button("Enviar notificação de teste") {
+                            sendTestNotification()
+                        }
+                        .buttonStyle(.bordered)
+                        Text(diagnosticMessage)
+                            .font(.caption)
+                            .foregroundStyle(.secondary)
+                    }
+
+                    section("2. Iniciar análise da tela", icon: "record.circle") {
+                        Text("Toque no controle, escolha ReelsMonitorExtension e confirme a transmissão do iOS. O conteúdo é analisado localmente.")
+                            .font(.subheadline)
+                            .foregroundStyle(.secondary)
+                        BroadcastStartButton()
+                            .frame(width: 90, height: 55)
+                    }
+
+                    section("3. Conferir no Instagram", icon: "camera") {
+                        Text("Abra o Instagram original e compare a aba Reels com Feed, Direct e Stories. O detector tenta emitir um aviso quando reconhece Reels duas vezes seguidas.")
+                            .font(.subheadline)
+                            .foregroundStyle(.secondary)
+                        Text("Importante: a transmissão também pode capturar mensagens e informações privadas. Encerre-a pelo indicador do iOS quando terminar.")
+                            .font(.caption)
+                            .foregroundStyle(.orange)
+                    }
+
+                    Text("Uso pessoal • Sem conta Instagram • Sem envio de capturas")
+                        .font(.caption)
                         .foregroundStyle(.secondary)
-                    BroadcastStartButton()
-                        .frame(width: 90, height: 56)
+                        .frame(maxWidth: .infinity)
                 }
                 .padding()
-                .frame(maxWidth: .infinity, alignment: .leading)
-                .background(.thinMaterial, in: RoundedRectangle(cornerRadius: 16))
-
-                VStack(alignment: .leading, spacing: 8) {
-                    Label("3. Abra o Instagram original", systemImage: "camera")
-                        .font(.headline)
-                    Text("Teste Reels, Direct e Stories. A análise é feita no iPhone, sem enviar imagens a servidores.")
-                        .font(.subheadline)
-                        .foregroundStyle(.secondary)
-                }
-                .padding()
-
-                Spacer()
-                Text("EXPERIMENTAL • Não bloqueia Reels ainda")
-                    .font(.caption.bold())
-                    .foregroundStyle(.orange)
-                    .frame(maxWidth: .infinity)
             }
-            .padding(.horizontal, 20)
             .navigationBarTitleDisplayMode(.inline)
+        }
+        .onAppear(perform: refreshNotificationStatus)
+    }
+
+    private func section<Content: View>(
+        _ title: String,
+        icon: String,
+        @ViewBuilder content: () -> Content
+    ) -> some View {
+        VStack(alignment: .leading, spacing: 12) {
+            Label(title, systemImage: icon).font(.headline)
+            content()
+        }
+        .padding()
+        .frame(maxWidth: .infinity, alignment: .leading)
+        .background(.thinMaterial, in: RoundedRectangle(cornerRadius: 16))
+    }
+
+    private func refreshNotificationStatus() {
+        UNUserNotificationCenter.current().getNotificationSettings { settings in
+            let status: String
+            switch settings.authorizationStatus {
+            case .authorized: status = "Permitidas"
+            case .provisional: status = "Provisórias"
+            case .denied: status = "Negadas (altere em Ajustes)"
+            case .notDetermined: status = "Não solicitadas"
+            case .ephemeral: status = "Temporárias"
+            @unknown default: status = "Desconhecida"
+            }
+            DispatchQueue.main.async { notificationStatus = status }
+        }
+    }
+
+    private func sendTestNotification() {
+        let content = UNMutableNotificationContent()
+        content.title = "Teste Reels Off"
+        content.body = "As notificações locais estão funcionando."
+        content.sound = .default
+        let request = UNNotificationRequest(
+            identifier: "reelsoff-test-\(UUID().uuidString)",
+            content: content,
+            trigger: UNTimeIntervalNotificationTrigger(timeInterval: 3, repeats: false)
+        )
+        UNUserNotificationCenter.current().add(request) { error in
+            DispatchQueue.main.async {
+                diagnosticMessage = error == nil
+                    ? "Aviso agendado. Coloque o app em segundo plano para conferir."
+                    : "Erro: \(error!.localizedDescription)"
+            }
         }
     }
 }
