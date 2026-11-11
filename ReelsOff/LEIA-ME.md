@@ -26,3 +26,11 @@ Protótipo SwiftUI para iPhone 14: ReplayKit Broadcast Upload Extension + Vision
 
 ## Sem Mac, sem pagar (Windows)
 Veja `GUIA_WINDOWS_GRATUITO.md` e o fluxo `.github/workflows/build-ios.yml` para tentar compilar no GitHub Actions e instalar com AltStore Classic. **Fluxo não testado; instalação de extensão pode falhar com conta gratuita.**
+
+
+## Atualização automática (10/11/2026)
+- O workflow na raiz do repositório em `.github/workflows/build.yml` passou a compilar automaticamente quando houver alteração em `ReelsOff/**` ou no próprio workflow na branch `main`.
+- A primeira execução manual do usuário foi bem-sucedida (58 s; 1 artefato), conforme captura do GitHub Actions.
+- O arquivo gerado é `ReelsOff-unsigned.ipa`: não possui assinatura Apple e **não é instalável diretamente** no iPhone.
+- A compilação automática não instala nem assina o app. O usuário precisará autorizar a instalação no próprio aparelho por uma ferramenta compatível e pode enfrentar restrições de extensões com Apple ID gratuito.
+- **O programa atual é um detector experimental com alertas, não um bloqueador funcional de Reels.** Não anunciar como app que bloqueia Reels.
