@@ -28,6 +28,9 @@ jobs:
       - name: Mostrar versao do Xcode
         run: xcodebuild -version
 
+      - name: Testar filtro de rotas Reels
+        run: node ReelsOff/tests/filter.test.cjs
+
       - name: Instalar XcodeGen
         run: brew install xcodegen
 
