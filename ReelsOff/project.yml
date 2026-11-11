@@ -1,0 +1,33 @@
+name: ReelsOff
+options:
+  bundleIdPrefix: com.pessoal.reelsoff
+settings:
+  base:
+    SWIFT_VERSION: 5.0
+    IPHONEOS_DEPLOYMENT_TARGET: '16.0'
+targets:
+  ReelsOff:
+    type: application
+    platform: iOS
+    sources: [ReelsOff]
+    settings:
+      base:
+        PRODUCT_BUNDLE_IDENTIFIER: com.pessoal.reelsoff
+        GENERATE_INFOPLIST_FILE: YES
+        INFOPLIST_KEY_UILaunchScreen_Generation: YES
+        INFOPLIST_KEY_UIApplicationSceneManifest_Generation: YES
+        TARGETED_DEVICE_FAMILY: '1'
+    dependencies:
+      - target: ReelsMonitorExtension
+        embed: true
+  ReelsMonitorExtension:
+    type: app-extension
+    platform: iOS
+    sources: [ReelsMonitorExtension]
+    info:
+      path: ReelsMonitorExtension/Info.plist
+    settings:
+      base:
+        PRODUCT_BUNDLE_IDENTIFIER: com.pessoal.reelsoff.monitor
+        SKIP_INSTALL: YES
+        TARGETED_DEVICE_FAMILY: '1'

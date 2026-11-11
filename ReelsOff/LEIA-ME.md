@@ -1,0 +1,28 @@
+# Reels Off — versão 0.1 (experimental)
+
+Protótipo SwiftUI para iPhone 14: ReplayKit Broadcast Upload Extension + Vision OCR local. **Não é um bloqueador funcional de Reels ainda**. Detecta heurísticamente o título "Reels" na parte superior da tela e tenta enviar uma notificação. Não solicita senha do Instagram, não envia a captura à internet e não modifica o Instagram.
+
+## Requisitos
+- Mac com Xcode e iPhone 14 (iOS 16 ou superior).
+- XcodeGen no Mac (`brew install xcodegen`) ou criação manual dos dois targets no Xcode.
+- Conta Apple para assinatura. Projetos com extensão podem exigir ajustes de assinatura/capacidades.
+
+## Abrir e executar
+1. Extraia o ZIP no Mac e execute `xcodegen generate` na pasta `ReelsOff`.
+2. Abra `ReelsOff.xcodeproj` e selecione a equipe em Signing & Capabilities para **ambos** os targets (app e extensão).
+3. Se os identificadores `com.pessoal.reelsoff` já estiverem ocupados, altere-os nos dois targets, e atualize `preferredExtension` em `ContentView.swift` para corresponder ao bundle ID da extensão.
+4. Instale no iPhone pelo Xcode; autorize notificações.
+5. Toque no botão de transmissão do sistema, selecione a extensão e autorize o compartilhamento da tela.
+6. Abra o Instagram original; entre em Reels e compare com Direct e Stories.
+7. Para parar: use o indicador de gravação/compartilhamento do iOS ou a Central de Controle.
+
+## Limites conhecidos
+- A heurística por OCR é intencionalmente simples e **não identifica com precisão garantida** a tela de Reels; depende do idioma e layout do Instagram.
+- Notificações podem não aparecer enquanto o iOS apresenta conteúdo em primeiro plano. O protótipo não altera a interface do Instagram nem bloqueia a navegação.
+- A captura de tela requer confirmação do usuário, pode consumir bateria e processa conteúdo sensível (por exemplo, mensagens) quando ativo, embora tudo permaneça local.
+- A próxima fase exige teste real de reconhecimento, mecanismos de intervenção autorizados pelo sistema e validação das restrições de assinatura/entitlements.
+- Projeto gerado no ambiente de desenvolvimento, **não compilado nem testado num iPhone ou Xcode**.
+
+
+## Sem Mac, sem pagar (Windows)
+Veja `GUIA_WINDOWS_GRATUITO.md` e o fluxo `.github/workflows/build-ios.yml` para tentar compilar no GitHub Actions e instalar com AltStore Classic. **Fluxo não testado; instalação de extensão pode falhar com conta gratuita.**
