@@ -34,3 +34,11 @@ Veja `GUIA_WINDOWS_GRATUITO.md` e o fluxo `.github/workflows/build-ios.yml` para
 - O arquivo gerado é `ReelsOff-unsigned.ipa`: não possui assinatura Apple e **não é instalável diretamente** no iPhone.
 - A compilação automática não instala nem assina o app. O usuário precisará autorizar a instalação no próprio aparelho por uma ferramenta compatível e pode enfrentar restrições de extensões com Apple ID gratuito.
 - **O programa atual é um detector experimental com alertas, não um bloqueador funcional de Reels.** Não anunciar como app que bloqueia Reels.
+
+
+## Iteração de diagnóstico (10/11/2026)
+- Interface atualizada para consultar autorização de notificações e enviar uma notificação local de teste após 3 segundos.
+- Detector melhorado anteriormente para exigir dois reconhecimentos OCR consecutivos e reduzir repetição de alertas; reconhecimento real no Instagram ainda não foi validado em dispositivo.
+- **Limitação técnica:** ReplayKit/ScreenCaptureKit capturam conteúdo com permissão, mas não disponibilizam APIs públicas para ocultar ou bloquear uma área do Instagram original. Não confundir compilação bem-sucedida com bloqueio funcional.
+- Para bloquear Reels preservando demais funcionalidades, pode ser necessário abrir mão do app original e usar uma experiência web filtrada. Essa alternativa não está implementada neste repositório.
+- Sem acesso físico ao iPhone e assinatura/autorização de instalação, não é possível declarar o produto como 100% pronto.
