@@ -8,6 +8,8 @@ import CoreVideo
 /// Nao fecha, bloqueia nem modifica a interface de outros aplicativos.
 final class SampleHandler: RPBroadcastSampleHandler {
     private let analysisQueue = DispatchQueue(label: "reelsoff.analysis", qos: .utility)
+    private let frameLock = NSLock()
+    private var framePending = false
     private var lastAnalysis = Date.distantPast
     private var lastAlert = Date.distantPast
     private var consecutiveReelsFrames = 0
@@ -33,10 +35,20 @@ final class SampleHandler: RPBroadcastSampleHandler {
         guard sampleBufferType == .video,
               let imageBuffer = CMSampleBufferGetImageBuffer(sampleBuffer) else { return }
 
-        // Toda a logica de estado e OCR ocorre numa unica fila para evitar
-        // corridas entre callbacks de frames sucessivos.
+        // Enfileira no maximo um quadro por vez: evita acumular buffers de video
+        // enquanto o OCR esta ocupado. Protegido por lock nos callbacks do ReplayKit.
+        frameLock.lock()
+        let canQueue = !framePending
+        if canQueue { framePending = true }
+        frameLock.unlock()
+        guard canQueue else { return }
         analysisQueue.async { [weak self, imageBuffer] in
             guard let self else { return }
+            defer {
+                self.frameLock.lock()
+                self.framePending = false
+                self.frameLock.unlock()
+            }
             let now = Date()
             guard now.timeIntervalSince(self.lastAnalysis) >= self.analysisInterval else { return }
             self.lastAnalysis = now
