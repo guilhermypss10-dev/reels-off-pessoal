@@ -60,6 +60,21 @@ struct ContentView: View {
                             .foregroundStyle(.secondary)
                     }
 
+                    section("Opção com bloqueio de links de Reels", icon: "safari") {
+                        Text("Abre a versao web do Instagram dentro do Reels Off. Oculta links de Reels e impede navegar diretamente para /reel/ ou /reels/.")
+                            .font(.subheadline)
+                            .foregroundStyle(.secondary)
+                        Text("Nao altera o Instagram original e o filtro pode falhar se o Instagram mudar sua interface.")
+                            .font(.caption)
+                            .foregroundStyle(.orange)
+                        NavigationLink {
+                            InstagramSemReelsView()
+                        } label: {
+                            Label("Abrir Instagram sem Reels (web)", systemImage: "arrow.up.right.square")
+                        }
+                        .buttonStyle(.borderedProminent)
+                    }
+
                     section("2. Iniciar análise da tela", icon: "record.circle") {
                         Text("Toque no controle, escolha ReelsMonitorExtension e confirme a transmissão do iOS. O conteúdo é analisado localmente.")
                             .font(.subheadline)
