@@ -1,17 +1,32 @@
-
 name: Compilar Reels Off para iPhone
 
 on:
   workflow_dispatch:
+  push:
+    branches: [main]
+    paths:
+      - 'ReelsOff/**'
+      - '.github/workflows/build.yml'
+
+permissions:
+  contents: read
+
+concurrency:
+  group: reelsoff-ios-${{ github.ref }}
+  cancel-in-progress: true
 
 jobs:
   build:
+    name: Compilar IPA experimental (sem assinatura)
     runs-on: macos-15
     timeout-minutes: 30
 
     steps:
       - name: Baixar codigo
         uses: actions/checkout@v4
+
+      - name: Mostrar versao do Xcode
+        run: xcodebuild -version
 
       - name: Instalar XcodeGen
         run: brew install xcodegen
@@ -20,7 +35,7 @@ jobs:
         working-directory: ReelsOff
         run: xcodegen generate
 
-      - name: Compilar aplicativo
+      - name: Compilar aplicativo (sem assinatura)
         working-directory: ReelsOff
         run: |
           xcodebuild \
@@ -34,15 +49,27 @@ jobs:
             CODE_SIGN_IDENTITY="" \
             build
 
-      - name: Criar arquivo IPA
+      - name: Empacotar IPA sem assinatura
         working-directory: ReelsOff
         run: |
+          set -euo pipefail
+          test -d build/Build/Products/Release-iphoneos/ReelsOff.app
           mkdir -p Payload
           cp -R build/Build/Products/Release-iphoneos/ReelsOff.app Payload/
-          zip -r ReelsOff.ipa Payload/
+          zip -qry ReelsOff-unsigned.ipa Payload
+          unzip -l ReelsOff-unsigned.ipa | grep 'Payload/ReelsOff.app/'
 
-      - name: Disponibilizar aplicativo
+      - name: Disponibilizar IPA experimental
         uses: actions/upload-artifact@v4
         with:
-          name: ReelsOff-iPhone
-          path: ReelsOff/ReelsOff.ipa
+          name: ReelsOff-IPA-sem-assinatura
+          path: ReelsOff/ReelsOff-unsigned.ipa
+          if-no-files-found: error
+          retention-days: 14
+
+      - name: Resumo e limitacoes
+        if: success()
+        run: |
+          echo '### Reels Off - IPA compilado' >> "$GITHUB_STEP_SUMMARY"
+          echo 'O artefato possui um IPA SEM ASSINATURA. Instalacao no iPhone exige assinatura/instalador compatível.' >> "$GITHUB_STEP_SUMMARY"
+          echo 'O aplicativo e um prototipo de deteccao e avisos; NAO bloqueia Reels.' >> "$GITHUB_STEP_SUMMARY"
