@@ -42,3 +42,11 @@ Veja `GUIA_WINDOWS_GRATUITO.md` e o fluxo `.github/workflows/build-ios.yml` para
 - **Limitação técnica:** ReplayKit/ScreenCaptureKit capturam conteúdo com permissão, mas não disponibilizam APIs públicas para ocultar ou bloquear uma área do Instagram original. Não confundir compilação bem-sucedida com bloqueio funcional.
 - Para bloquear Reels preservando demais funcionalidades, pode ser necessário abrir mão do app original e usar uma experiência web filtrada. Essa alternativa não está implementada neste repositório.
 - Sem acesso físico ao iPhone e assinatura/autorização de instalação, não é possível declarar o produto como 100% pronto.
+
+
+## Modo alternativo Web sem Reels (11/11/2026)
+- Adicionada tela opcional `InstagramSemReelsView.swift` com `WKWebView`, acesso a Instagram web e filtragem local de links com rotas `/reel/` e `/reels/`.
+- A interceptacao de links usa `WKNavigationDelegate`, e o script local remove links de Reels dinamicamente e verifica navegacoes do tipo SPA. O filtro pode quebrar quando o Instagram mudar seu site; nao representa garantia de bloqueio total.
+- A versao web opera em uma sessao separada, e pode exigir login nela. Nao captura nem envia senhas ao projeto.
+- Este modo **nao funciona dentro do Instagram original**. O detector ReplayKit do app original continua experimental e nao bloqueia Reels.
+- Nenhuma instalacao no iPhone foi executada remotamente, e a compilacao deste novo codigo ainda precisa ser confirmada no GitHub Actions.
