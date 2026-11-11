@@ -97,7 +97,7 @@ private struct FilteredInstagramWebView: UIViewRepresentable {
     (() => {
       if (window.__reelsOffInstalled) return;
       window.__reelsOffInstalled = true;
-      const reelPath = path => /^\\/reels?(?:\\/|$)/i.test(path || '');
+      const reelPath = path => /^\/reels?(?:\/|$)/i.test(path || '');
       const isReelLink = link => {
         try { return reelPath(new URL(link.href, location.href).pathname); }
         catch { return false; }
