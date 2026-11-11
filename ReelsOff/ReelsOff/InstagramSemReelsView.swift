@@ -43,7 +43,7 @@ private struct FilteredInstagramWebView: UIViewRepresentable {
 
         let script = WKUserScript(
             source: Self.filterScript,
-            injectionTime: .atDocumentEnd,
+            injectionTime: .atDocumentStart,
             forMainFrameOnly: true
         )
         configuration.userContentController.addUserScript(script)
@@ -51,7 +51,10 @@ private struct FilteredInstagramWebView: UIViewRepresentable {
         let webView = WKWebView(frame: .zero, configuration: configuration)
         webView.navigationDelegate = context.coordinator
         webView.allowsBackForwardNavigationGestures = true
-        webView.load(URLRequest(url: URL(string: "https://www.instagram.com/")!))
+        webView.customUserAgent = nil
+        if let homeURL = URL(string: "https://www.instagram.com/") {
+            webView.load(URLRequest(url: homeURL))
+        }
         return webView
     }
 
@@ -126,8 +129,14 @@ private struct FilteredInstagramWebView: UIViewRepresentable {
           event.stopImmediatePropagation();
         }
       }, true);
-      const observer = new MutationObserver(clean);
-      observer.observe(document.documentElement, {childList: true, subtree: true});
+      const beginObserving = () => {
+        if (!document.documentElement) return;
+        const observer = new MutationObserver(clean);
+        observer.observe(document.documentElement, {childList: true, subtree: true});
+        clean();
+      };
+      if (document.documentElement) beginObserving();
+      else document.addEventListener('DOMContentLoaded', beginObserving, { once: true });
       addEventListener('popstate', clean);
       const originalPush = history.pushState;
       const originalReplace = history.replaceState;
@@ -141,7 +150,7 @@ private struct FilteredInstagramWebView: UIViewRepresentable {
         clean();
         return result;
       };
-      clean();
+      if (document.documentElement) clean();
     })();
     """#
 }
